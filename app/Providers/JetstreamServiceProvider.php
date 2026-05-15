@@ -66,10 +66,9 @@ class JetstreamServiceProvider extends ServiceProvider
 
 
         Fortify::registerView(function () {
-            include 'currencies.php';
             return view('auth.register', [
                 'title' => 'Register an Account',
-                'currencies' => $currencies,
+                'currencies' => config('currencies'),
                 'settings' => Settings::where('id', '1')->first(),
             ]);
         });

@@ -66,6 +66,13 @@
                         <i data-lucide="user" class="w-5 h-5"></i>
                         <span>Personal Information</span>
                     </button>
+                    <button @click="activeTab = 'cur'" :class="{ 'border-b-2 border-blue-500': activeTab === 'cur', 'text-blue-600 dark:text-blue-400': activeTab === 'cur', 'text-gray-300 dark:text-gray-400': activeTab !== 'cur' }" class="py-4 px-4 font-medium text-sm focus:outline-none flex items-center gap-2 transition-colors">
+                        <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        <span>Currency</span>
+                        @if (Auth::user()->currency_change_status === 'pending')
+                            <span class="ml-1 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending</span>
+                        @endif
+                    </button>
                     <button @click="activeTab = 'pas'" :class="{ 'border-b-2 border-blue-500': activeTab === 'pas', 'text-blue-600 dark:text-blue-400': activeTab === 'pas', 'text-gray-300 dark:text-gray-400': activeTab !== 'pas' }" class="py-4 px-4 font-medium text-sm focus:outline-none flex items-center gap-2 transition-colors">
                         <i data-lucide="lock" class="w-5 h-5"></i>
                         <span>Security</span>
@@ -89,6 +96,22 @@
                         </div>
                     </div>
                     @include('profile.update-profile-information-form')
+                </div>
+
+                <div x-show="activeTab === 'cur'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 border-l-4 border-emerald-500 p-4 mb-6 rounded-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i data-lucide="info" class="h-5 w-5 text-emerald-500" aria-hidden="true"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-emerald-700 dark:text-emerald-400">
+                                    Choose the currency in which your balances and transactions are displayed. Currency changes require admin approval to keep your accounting consistent.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    @include('profile.currency-preference-form')
                 </div>
 
                 <div x-show="activeTab === 'pas'" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" style="display: none;">

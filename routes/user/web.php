@@ -149,6 +149,8 @@ Route::middleware(['auth:sanctum', 'verified'])->prefix('dashboard')->group(func
 
         // Update emal preference
         Route::put('update-email-preference', [ProfileController::class, 'updateemail'])->name('updateemail');
+        // Request a currency change (requires admin approval)
+        Route::post('request-currency-change', [ProfileController::class, 'requestCurrencyChange'])->name('currency.request');
         Route::get('loan', [ViewsController::class, 'loan'])->name('loan');
 		Route::get('viewloan', [LoanController::class, 'veiwloans'])->name('veiwloan');
         Route::post('loan', [LoanController::class, 'loan'])->name('loan');

@@ -25,11 +25,24 @@
                 </li>
 
                 @if (Auth('admin')->User()->type == 'Super Admin' || Auth('admin')->User()->type == 'Admin')
+                  @php
+                      $pendingCurrencyRequests = \App\Models\User::where('currency_change_status', 'pending')->count();
+                  @endphp
                   <li
                         class="nav-item {{ request()->routeIs('manageusers') ? 'active' : '' }} {{ request()->routeIs('loginactivity') ? 'active' : '' }} {{ request()->routeIs('user.plans') ? 'active' : '' }} {{ request()->routeIs('viewuser') ? 'active' : '' }}">
                         <a href="{{ url('/admin/dashboard/manageusers') }}">
                             <i class="fa fa-user-circle" aria-hidden="true"></i>
                             <p>Manage Users</p>
+                        </a>
+                    </li>
+
+                    <li class="nav-item {{ request()->routeIs('currency.requests.*') ? 'active' : '' }}">
+                        <a href="{{ route('currency.requests.index') }}">
+                            <i class="fa fa-dollar-sign" aria-hidden="true"></i>
+                            <p>Currency Requests</p>
+                            @if ($pendingCurrencyRequests > 0)
+                                <span class="badge badge-warning">{{ $pendingCurrencyRequests }}</span>
+                            @endif
                         </a>
                     </li>
 

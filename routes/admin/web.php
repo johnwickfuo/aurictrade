@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Auth\LoginController;
 use App\Http\Controllers\Admin\LogicController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\ManageUsersController;
+use App\Http\Controllers\Admin\CurrencyChangeController;
 use App\Http\Controllers\Admin\ManageDepositController;
 use App\Http\Controllers\Admin\ManageWithdrawalController;
 use App\Http\Controllers\Admin\InvPlanController;
@@ -178,6 +179,13 @@ Route::middleware(['isadmin', '2fa'])->prefix('admin')->group(function () {
         Route::get('dashboard/markas/{status}/{id}', 'markplanas')->name('markas');
         Route::get('dashboard/signalmarkas/{status}/{id}', 'signalmarkas')->name('signalmarkas');
         Route::get('dashboard/deletesignal/{id}', 'deletesignal')->name('deletesignal');
+    });
+
+    // Currency change request management
+    Route::controller(CurrencyChangeController::class)->group(function () {
+        Route::get('dashboard/currency-requests', 'index')->name('currency.requests.index');
+        Route::post('dashboard/currency-requests/{id}/approve', 'approve')->name('currency.requests.approve');
+        Route::post('dashboard/currency-requests/{id}/reject', 'reject')->name('currency.requests.reject');
     });
 
 

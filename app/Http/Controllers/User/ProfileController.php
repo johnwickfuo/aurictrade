@@ -70,4 +70,46 @@ class ProfileController extends Controller
         $user->save();
         return response()->json(['status' => 200, 'success' => 'Email Preference updated']);
     }
+
+    // Submit a currency-change request. The change does not take effect until
+    // an admin approves it; only one request can be pending per user.
+    public function requestCurrencyChange(Request $request)
+    {
+        $currencies = config('currencies');
+
+        $request->validate([
+            'requested_currency' => ['required', 'string', 'in:' . implode(',', array_keys($currencies))],
+        ]);
+
+        $user = User::find(Auth::user()->id);
+
+        if ($user->currency_change_status === 'pending') {
+            return response()->json([
+                'status' => 422,
+                'error' => 'You already have a pending currency change request.',
+            ], 422);
+        }
+
+        $newCode = $request->input('requested_currency');
+
+        if ($user->s_currency === $newCode) {
+            return response()->json([
+                'status' => 422,
+                'error' => 'That is already your current currency.',
+            ], 422);
+        }
+
+        $user->requested_currency = $newCode;
+        $user->requested_currency_symbol = $currencies[$newCode];
+        $user->currency_change_status = 'pending';
+        $user->currency_change_requested_at = now();
+        $user->currency_change_resolved_at = null;
+        $user->currency_change_admin_note = null;
+        $user->save();
+
+        return response()->json([
+            'status' => 200,
+            'success' => 'Currency change request submitted. An admin will review it shortly.',
+        ]);
+    }
 }

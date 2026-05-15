@@ -29,12 +29,16 @@ class CreateNewUser implements CreatesNewUsers
     {
         $settings = Settings::where('id', '1')->first();
         $request = request();
+        $currencies = config('currencies');
+        $currencyRule = ['nullable', 'string', 'in:' . implode(',', array_keys($currencies))];
+
         if ($settings->captcha == "true") {
             Validator::make($input, [
                 'name' => ['required', 'string', 'max:255'],
                 'username' => ['required', 'unique:users,username'],
                 'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
                 'password' => $this->passwordRules(),
+                'currency' => $currencyRule,
                 'g-recaptcha-response' => 'required|captcha',
                 'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['required', 'accepted'] : '',
             ])->validate();
@@ -50,16 +54,19 @@ class CreateNewUser implements CreatesNewUsers
     }],
 
                 'password' => $this->passwordRules(),
+                'currency' => $currencyRule,
                 'terms' => Jetstream::hasTermsAndPrivacyPolicyFeature() ? ['required', 'accepted'] : '',
             ])->validate();
         }
 
-        if($request['currency']==Null){
-
-            $currency= '$';
-        }else{
-            $currency = $input['currency'];
-        }
+        // Resolve the requested currency code to its symbol. Fall back to the
+        // platform default if the user didn't pick anything.
+        $defaultCode = $settings->s_currency ?? 'USD';
+        $defaultSymbol = $settings->currency ?? ($currencies[$defaultCode] ?? '&#36;');
+        $currencyCode = !empty($input['currency']) && isset($currencies[$input['currency']])
+            ? $input['currency']
+            : $defaultCode;
+        $currencySymbol = $currencies[$currencyCode] ?? $defaultSymbol;
 
         if (session('ref_by')) {
             $ref_by = session('ref_by');
@@ -82,7 +89,8 @@ class CreateNewUser implements CreatesNewUsers
             'country' => $input['country'],
             'ref_by' => $ref_by_id,
             'status' => 'active',
-            // 'currency'=> $currency,
+            'currency' => $currencySymbol,
+            's_currency' => $currencyCode,
             'password' => Hash::make($input['password']),
         ]);
 

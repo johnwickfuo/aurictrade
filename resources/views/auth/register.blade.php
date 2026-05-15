@@ -235,6 +235,36 @@
             </div>
         </div>
 
+        <!-- Account Currency -->
+        <div class="space-y-2">
+            <label for="currency" class="block text-sm font-bold text-gray-200">
+                Account Currency <span class="text-red-400">*</span>
+            </label>
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-4 z-10">
+                    <i data-lucide="dollar-sign" class="h-5 w-5 text-gray-400 group-focus-within:text-blue-400 transition-colors"></i>
+                </div>
+                <select name="currency" id="currency" required
+                        class="block w-full rounded-xl border border-gray-600 bg-gray-900 pl-12 pr-8 py-4 text-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 focus:bg-gray-800 transition-all duration-200 text-sm font-bold appearance-none">
+                    <option value="" selected disabled class="text-gray-400">Select your currency</option>
+                    @foreach ($currencies as $code => $symbol)
+                        <option value="{{ $code }}" @if(($settings->s_currency ?? 'USD') == $code) selected @endif>
+                            {{ $code }} ({!! $symbol !!})
+                        </option>
+                    @endforeach
+                </select>
+                <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                    <i data-lucide="chevron-down" class="h-4 w-4 text-gray-400"></i>
+                </div>
+            </div>
+            @error('currency')
+                <p class="text-sm text-red-400 flex items-center gap-1">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>{{ $message }}
+                </p>
+            @enderror
+            <p class="text-xs text-gray-400 mt-1">Used to display your balances and transactions. You can request to change this later from your dashboard.</p>
+        </div>
+
         <!-- Field 1: Investment Experience -->
         <div class="space-y-2">
             <label for="experience" class="block text-sm font-bold text-gray-200">
@@ -640,9 +670,15 @@
                     } else if (step === 1) {
                         // Validate location
                         const country = document.getElementById('country').value;
+                        const currency = document.getElementById('currency').value;
 
                         if (!country || country === 'Select your country') {
                             missingFields.push('Country');
+                            isValid = false;
+                        }
+
+                        if (!currency) {
+                            missingFields.push('Account Currency');
                             isValid = false;
                         }
 

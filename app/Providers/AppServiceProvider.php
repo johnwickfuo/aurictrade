@@ -47,5 +47,6 @@ class AppServiceProvider extends ServiceProvider
         View::share('terms', $terms);
         View::share('moresettings', $moreset);
         View::share('mod', $settings->modules);
+        View::share('currencies', config('currencies'));
     }
 }

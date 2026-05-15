@@ -289,14 +289,13 @@ class HomeController extends Controller
     //return settings form
     public function settings(Request $request)
     {
-        include 'currencies.php';
         return view('admin.settings')->with(array(
 
             'wmethods' => Wdmethod::where('type', 'withdrawal')->get(),
             'assets' => Asset::all(),
             //'markets' => markets::all(),
             'cpd' => Cp_transaction::where('id', '=', '1')->first(),
-            'currencies' => $currencies,
+            'currencies' => config('currencies'),
             'title' => 'System Settings'
         ));
         //return view('settings')->with(array('title' =>'System Settings'));

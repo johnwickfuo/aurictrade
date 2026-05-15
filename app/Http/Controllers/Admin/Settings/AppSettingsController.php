@@ -16,11 +16,10 @@ class AppSettingsController extends Controller
     public function appsettingshow()
     {
         $live_timezones = timezone_identifiers_list();
-        include 'currencies.php';
         return view('admin.Settings.AppSettings.show', [
             'title' => 'Website information settings',
             'timezones' => $live_timezones,
-            'currencies' => $currencies,
+            'currencies' => config('currencies'),
             'timezone' => config('app.timezone'),
             'settings' => Settings::where('id', '=', '1')->first(),
         ]);

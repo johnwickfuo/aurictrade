@@ -130,10 +130,9 @@ class ManageUsersController extends Controller
         $user = User::where('id', $id)->first();
         $plans = Plans::where('type','main')->get();
         $signals = Signal::where('type','main')->get();
-        include 'currencies.php';
         return view('admin.Users.userdetails', [
             'user' => $user,
-            'currencies' => $currencies,
+            'currencies' => config('currencies'),
             'pl' => Plans::orderByDesc('id')->get(),
             'title' => "Manage $user->name",
             'plans' =>$plans,

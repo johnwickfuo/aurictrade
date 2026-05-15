@@ -16,6 +16,22 @@ if (Auth('admin')->User()->dashboard_style == 'light') {
             <div class="page-inner">
                 <x-danger-alert />
                 <x-success-alert />
+
+                @if ($user->currency_change_status === 'pending')
+                    <div class="alert alert-warning d-flex justify-content-between align-items-center">
+                        <span>
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <strong>Pending currency change:</strong>
+                            requesting <strong>{!! $user->requested_currency_symbol !!} {{ $user->requested_currency }}</strong>
+                            (currently {!! $user->currency !!} {{ $user->s_currency }}).
+                            Requested {{ \Carbon\Carbon::parse($user->currency_change_requested_at)->diffForHumans() }}.
+                        </span>
+                        <a href="{{ route('currency.requests.index') }}" class="btn btn-warning btn-sm">
+                            Review requests
+                        </a>
+                    </div>
+                @endif
+
                 <!-- Beginning of  Dashboard Stats  -->
                 <div class="row">
                     <div class="col-md-12">
