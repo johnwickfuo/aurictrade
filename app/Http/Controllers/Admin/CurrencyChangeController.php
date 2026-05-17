@@ -55,7 +55,7 @@ class CurrencyChangeController extends Controller
             return redirect()->back()->with('error', 'Requested currency is invalid.');
         }
 
-        $user->currency = $currencies[$code];
+        $user->currency = html_entity_decode($currencies[$code], ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $user->s_currency = $code;
         $user->requested_currency = null;
         $user->requested_currency_symbol = null;

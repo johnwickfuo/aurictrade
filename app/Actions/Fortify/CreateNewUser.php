@@ -60,13 +60,17 @@ class CreateNewUser implements CreatesNewUsers
         }
 
         // Resolve the requested currency code to its symbol. Fall back to the
-        // platform default if the user didn't pick anything.
+        // platform default if the user didn't pick anything. Decode HTML
+        // entities (the config stores them as e.g. '&#36;') so the actual
+        // unicode glyph is stored — existing display code uses {{ }} which
+        // would otherwise show the raw entity string.
         $defaultCode = $settings->s_currency ?? 'USD';
-        $defaultSymbol = $settings->currency ?? ($currencies[$defaultCode] ?? '&#36;');
+        $defaultSymbolRaw = $settings->currency ?? ($currencies[$defaultCode] ?? '&#36;');
         $currencyCode = !empty($input['currency']) && isset($currencies[$input['currency']])
             ? $input['currency']
             : $defaultCode;
-        $currencySymbol = $currencies[$currencyCode] ?? $defaultSymbol;
+        $currencySymbolRaw = $currencies[$currencyCode] ?? $defaultSymbolRaw;
+        $currencySymbol = html_entity_decode($currencySymbolRaw, ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         if (session('ref_by')) {
             $ref_by = session('ref_by');

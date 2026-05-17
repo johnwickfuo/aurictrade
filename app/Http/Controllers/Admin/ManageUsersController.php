@@ -557,6 +557,16 @@ public function deleteloan($id)
     //update users info
     public function edituser(Request $request)
     {
+        $currencies = config('currencies');
+        $code = $request['s_currency'];
+        $symbol = $request['currency'];
+        // Resolve the symbol from the code when possible so the value stored
+        // matches the canonical config, and decode HTML entities into actual
+        // glyphs (the dropdown options encode their value as &#36; etc.).
+        if ($code && isset($currencies[$code])) {
+            $symbol = $currencies[$code];
+        }
+        $symbol = html_entity_decode($symbol ?? '$', ENT_QUOTES | ENT_HTML5, 'UTF-8');
 
         User::where('id', $request['user_id'])
             ->update([
@@ -566,8 +576,8 @@ public function deleteloan($id)
                 'username' => $request['username'],
                 'phone' => $request['phone'],
                 'ref_link' => $request['ref_link'],
-                'currency'=>$request['currency'],
-                's_currency'=>$request['s_currency'],
+                'currency' => $symbol,
+                's_currency' => $code,
             ]);
         return redirect()->back()->with('success', 'User details updated Successfully!');
     }

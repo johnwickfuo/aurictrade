@@ -14,6 +14,8 @@
         </p>
     </div>
 
+    <div id="currencyFormStatus" class="mb-4 hidden"></div>
+
     <!-- Current currency card -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div class="p-4 rounded-xl bg-gray-800 border border-gray-700">
@@ -46,7 +48,7 @@
     @endif
 
     <!-- Request currency change form -->
-    <form method="POST" action="javascript:void(0)" id="requestCurrencyForm" class="space-y-4">
+    <form method="POST" action="#" id="requestCurrencyForm" class="space-y-4" onsubmit="return false;">
         @csrf
         <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-center">
             <div class="md:col-span-1">
@@ -107,43 +109,81 @@
             lucide.createIcons();
         }
 
-        const form = document.getElementById('requestCurrencyForm');
+        var form = document.getElementById('requestCurrencyForm');
         if (!form) return;
 
-        form.addEventListener('submit', function() {
-            const select = document.getElementById('requested_currency');
-            if (!select.value) {
-                alert('Please choose a currency before submitting.');
+        function getAlpineState() {
+            try { return Alpine.$data(form.closest('[x-data]')); } catch (e) { return null; }
+        }
+
+        function resetSpinner() {
+            var state = getAlpineState();
+            if (state) state.submitting = false;
+        }
+
+        function showStatus(msg, type) {
+            var el = document.getElementById('currencyFormStatus');
+            if (!el) {
+                alert(msg);
                 return;
+            }
+            var classes = type === 'success'
+                ? 'p-4 rounded-lg bg-green-900/30 border border-green-700 text-green-100'
+                : 'p-4 rounded-lg bg-red-900/30 border border-red-700 text-red-100';
+            el.className = classes;
+            el.textContent = msg;
+            el.classList.remove('hidden');
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var select = document.getElementById('requested_currency');
+            if (!select || !select.value) {
+                showStatus('Please choose a currency before submitting.', 'error');
+                resetSpinner();
+                return false;
             }
 
             $.ajax({
                 url: "{{ route('currency.request') }}",
                 type: 'POST',
+                dataType: 'json',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
                 data: {
                     _token: '{{ csrf_token() }}',
                     requested_currency: select.value
-                },
-                success: function(response) {
-                    if (response.status === 200) {
-                        const toast = document.createElement('div');
-                        toast.className = 'fixed top-4 right-4 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-lg z-50';
-                        toast.innerHTML = `<p class="text-sm font-medium">${response.success}</p>`;
-                        document.body.appendChild(toast);
-                        setTimeout(() => { window.location.reload(); }, 1500);
-                    } else if (response.status === 422 || response.error) {
-                        alert(response.error || 'Could not submit request.');
-                        location.reload();
-                    }
-                },
-                error: function(xhr) {
-                    const msg = xhr.responseJSON && xhr.responseJSON.error
-                        ? xhr.responseJSON.error
-                        : 'Failed to submit currency change request. Please try again.';
-                    alert(msg);
-                    location.reload();
                 }
+            }).done(function(response) {
+                console.log('[currency-change] success', response);
+                if (response && response.status === 200) {
+                    showStatus(response.success || 'Request submitted.', 'success');
+                    setTimeout(function() { window.location.reload(); }, 1200);
+                } else {
+                    showStatus((response && response.error) || 'Unexpected response from server.', 'error');
+                    resetSpinner();
+                }
+            }).fail(function(xhr, textStatus, errorThrown) {
+                console.error('[currency-change] error', xhr.status, textStatus, errorThrown, xhr.responseText);
+                var msg;
+                if (xhr.status === 419) {
+                    msg = 'Your session expired. Please refresh the page and try again.';
+                } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                    msg = xhr.responseJSON.error;
+                } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                } else {
+                    msg = 'Failed to submit currency change request (HTTP ' + xhr.status + '). Please try again.';
+                }
+                showStatus(msg, 'error');
+                resetSpinner();
             });
+
+            return false;
         });
     });
 </script>

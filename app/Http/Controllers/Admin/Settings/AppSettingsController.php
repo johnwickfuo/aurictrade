@@ -100,10 +100,21 @@ class AppSettingsController extends Controller
             $return_capital = false;
         }
 
+        // Resolve the symbol from the code via the canonical config map, then
+        // decode HTML entities (the dropdown options are encoded as &#36; etc.)
+        // so the stored value is the actual unicode glyph displayable via {{ }}.
+        $currencies = config('currencies');
+        $code = $request['s_currency'];
+        $symbol = $request['currency'];
+        if ($code && isset($currencies[$code])) {
+            $symbol = $currencies[$code];
+        }
+        $symbol = html_entity_decode($symbol ?? '$', ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
         Settings::where('id', 1)->update([
             'contact_email' => $request['contact_email'],
-            'currency' => $request['currency'],
-            's_currency' => $request['s_currency'],
+            'currency' => $symbol,
+            's_currency' => $code,
             'weekend_trade' => $request['weekend_trade'],
             'location' => $request['location'],
             'trade_mode' => $request['trade_mode'],
